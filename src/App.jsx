@@ -16,7 +16,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
   const [largeImage, setLargeImage] = useState(null);
-  // const [tags, setTags] = useState('');
+  const [tags, setTags] = useState('');
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
 
@@ -44,21 +44,21 @@ const App = () => {
     setPage(prevState => prevState + 1);
   };
 
-  const modalOpen = largeImageURL => {
+  const modalOpen = (largeImage, tags) => {
     setIsShowModal(true);
-    setLargeImage(largeImageURL);
-    // setTags(tags);
+    setLargeImage(largeImage);
+    setTags(tags);
   };
 
   const modalClose = e => {
     if (e.code === 'Escape' || e.currentTarget === e.target) {
       setIsShowModal(false);
       setLargeImage('');
-      // setTags('');
+      setTags('');
     }
   };
 
-  const searchInput = ({ query }) => {
+  const searchInput = query => {
     setQuery(query);
     setImages([]);
     setPage(1);
@@ -81,7 +81,7 @@ const App = () => {
       {<ImageGallery images={images} onClick={modalOpen} />}
       {isShowModal && (
         <Modal onClose={modalClose}>
-          <ImageInModal {...largeImage} />
+          <ImageInModal largeImage={largeImage} tags={tags} />
         </Modal>
       )}
       {Boolean(images.length) && page < totalPage && (
