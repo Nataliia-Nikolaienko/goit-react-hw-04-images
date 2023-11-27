@@ -16,7 +16,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isShowModal, setIsShowModal] = useState(false);
   const [largeImage, setLargeImage] = useState(null);
-  const [tags, setTags] = useState('');
+  // const [tags, setTags] = useState('');
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
 
@@ -44,17 +44,17 @@ const App = () => {
     setPage(prevState => prevState + 1);
   };
 
-  const modalOpen = (largeImageURL, tags) => {
+  const modalOpen = largeImageURL => {
     setIsShowModal(true);
     setLargeImage(largeImageURL);
-    setTags(tags);
+    // setTags(tags);
   };
 
   const modalClose = e => {
     if (e.code === 'Escape' || e.currentTarget === e.target) {
       setIsShowModal(false);
       setLargeImage('');
-      setTags('');
+      // setTags('');
     }
   };
 
