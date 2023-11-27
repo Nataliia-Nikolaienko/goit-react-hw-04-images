@@ -1,119 +1,93 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 
-import { getImagesWithSearch } from './api/images';
+import { searchImg } from './api/images';
 
 import ImageGallery from './components/ImageGallery';
-import FormikSearchBar from './components/Searchbar';
+import SearchBar from './components/Searchbar';
 import ImageInModal from 'components/ImageInModal';
 import Modal from './components/Modal';
 import Button from './components/Button';
 import Loader from './components/Loader';
 
-class App extends Component {
-  state = {
-    images: [],
-    query: '',
-    page: 1,
-    isLoading: false,
-    isShowModal: false,
-    largeImage: null,
-  };
+const App = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isShowModal, setIsShowModal] = useState(false);
+  const [largeImage, setLargeImage] = useState(null);
+  const [tags, setTags] = useState('');
+  const [error, setError] = useState(null);
+  const [total, setTotal] = useState(0);
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.handleSearch();
-    }
-  }
-
-  handleSearch = async () => {
-    try {
-      this.setState({ isLoading: true });
-      const { query, page } = this.state;
-      const data = await getImagesWithSearch(query, page);
-      this.setState(({ images }) => {
-        return {
-          images: [...images, ...data.hits],
-          error: '',
-          isLoading: false,
-          total: data.totalHits,
-        };
-      });
-    } catch (error) {
-      this.setState({ error: error.response.data, isLoading: false });
-    }
-  };
-
-  handleSubmit = ({ query }) => {
-    if (query === this.state.query) {
+  useEffect(() => {
+    if (!query) {
       return;
     }
-    this.setState({ query, images: [], page: 1 });
+    const handleSearch = async () => {
+      try {
+        setIsLoading(true);
+        const data = await searchImg(query, page);
+
+        setImages(images => [...images, ...data.hits]);
+        setTotal(data.totalHits);
+      } catch (error) {
+        setError(error.response.data);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    handleSearch();
+  }, [query, page]);
+
+  const loadMore = () => {
+    setPage(prevState => prevState + 1);
   };
 
-  modalOpen = ({ largeImageURL, tags }) => {
-    this.setState({
-      largeImage: {
-        largeImageURL,
-        tags,
-      },
-      isShowModal: true,
-    });
+  const modalOpen = (largeImageURL, tags) => {
+    setIsShowModal(true);
+    setLargeImage(largeImageURL);
+    setTags(tags);
   };
 
-  closeModal = () => {
-    this.setState(prev => ({
-      isShowModal: !prev.isShowModal,
-      largeImage: null,
-    }));
+  const modalClose = e => {
+    if (e.code === 'Escape' || e.currentTarget === e.target) {
+      setIsShowModal(false);
+      setLargeImage('');
+      setTags('');
+    }
   };
 
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const searchInput = ({ query }) => {
+    setQuery(query);
+    setImages([]);
+    setPage(1);
   };
 
-  render() {
-    const {
-      images,
-      isLoading,
-      total,
-      error,
-      page,
-      largeImage,
+  const totalPage = Math.ceil(total / 12);
 
-      isShowModal,
-    } = this.state;
-
-    const totalPage = Math.ceil(total / 12);
-
-    return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gridGap: '16px',
-          paddingBottom: '24px',
-        }}
-      >
-        {error && <h1>{error}</h1>}
-        <FormikSearchBar submit={this.handleSubmit} />
-        {isLoading && <Loader />}
-        {<ImageGallery images={images} modalOpen={this.modalOpen} />}
-        {isShowModal && (
-          <Modal close={this.closeModal}>
-            <ImageInModal {...largeImage} />
-          </Modal>
-        )}
-        {Boolean(images.length) && page < totalPage && (
-          <Button loading={this.loadMore} />
-        )}
-      </div>
-    );
-  }
-}
-
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridGap: '16px',
+        paddingBottom: '24px',
+      }}
+    >
+      {error && <h1>{error}</h1>}
+      <SearchBar onSubmit={searchInput} />
+      {isLoading && <Loader />}
+      {<ImageGallery images={images} onClick={modalOpen} />}
+      {isShowModal && (
+        <Modal onClose={modalClose}>
+          <ImageInModal {...largeImage} />
+        </Modal>
+      )}
+      {Boolean(images.length) && page < totalPage && (
+        <Button loading={loadMore} />
+      )}
+    </div>
+  );
+};
 export default App;

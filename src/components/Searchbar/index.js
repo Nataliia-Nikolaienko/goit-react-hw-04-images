@@ -1,41 +1,42 @@
-import { Formik } from 'formik';
 import { FcSearch } from 'react-icons/fc';
 import css from '../Searchbar/SearchBar.module.css';
+import { useState } from 'react';
 
-const FormikSearchBar = ({ submit }) => {
+const SearchBar = ({ onSubmit }) => {
+  const [searchImg, setSearchImg] = useState('');
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (searchImg.trim() === '') {
+      return alert('Please enter the name of the picture');
+    }
+    onSubmit(searchImg);
+    setSearchImg('');
+  };
+
   return (
-    <Formik initialValues={{ query: '' }} onSubmit={submit}>
-      {formik => {
-        return (
-          <header className={css.searchbar}>
-            <form onSubmit={formik.handleSubmit} className={css.searchForm}>
-              <button
-                type="submit"
-                className={css.searchButton}
-                disabled={formik.errors.title || formik.errors.description}
-              >
-                <span className={css.searchButtonLabel}>Search</span>
-                <span>
-                  <FcSearch className={css.icon} />
-                </span>
-              </button>
+    <header className={css.searchbar}>
+      <form onSubmit={handleSubmit} className={css.searchForm}>
+        <button type="submit" className={css.searchButton}>
+          <span className={css.searchButtonLabel}>Search</span>
+          <span>
+            <FcSearch className={css.icon} />
+          </span>
+        </button>
 
-              <input
-                name="query"
-                className={css.searchInput}
-                type="text"
-                value={formik.values.query}
-                onChange={formik.handleChange}
-                autoComplete="off"
-                autoFocus
-                placeholder="Search images and photos"
-              />
-            </form>
-          </header>
-        );
-      }}
-    </Formik>
+        <input
+          name="query"
+          className={css.searchInput}
+          type="text"
+          value={searchImg}
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          onChange={e => setSearchImg(e.target.value)}
+        />
+      </form>
+    </header>
   );
 };
 
-export default FormikSearchBar;
+export default SearchBar;

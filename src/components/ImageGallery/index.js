@@ -3,18 +3,10 @@ import css from '../ImageGallery/ImageGallery.module.css';
 
 import ImageGalleryItem from '../ImageGalleryItem';
 
-const ImageGallery = ({ images, modalOpen }) => {
+const ImageGallery = ({ images, onClick }) => {
   return (
     <ul className={css.imageGallery}>
-      {images.map(({ id, webformatURL, tags, largeImageURL }) => (
-        <ImageGalleryItem
-          modalOpen={modalOpen}
-          key={id}
-          webformatURL={webformatURL}
-          largeImageURL={largeImageURL}
-          tags={tags}
-        />
-      ))}
+      <ImageGalleryItem onClick={onClick} images={images} />
     </ul>
   );
 };
